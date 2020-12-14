@@ -1,0 +1,20 @@
+{
+  "name": "onelua",
+  "version": "1.0.0",
+  "description": "Lua script merger bringing in the NPM workflow. Compiles multiple Lua scripts into one single script, and enables tracking of remote Lua packages.",
+  "main": "onelua.js",
+  "bin": {
+    "onelua": "./cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "cngc4e",
+  "license": "MIT",
+  "dependencies": {
+    "argparse": "^2.0.1",
+    "decache": "^4.6.0",
+    "luamin": "^1.0.4",
+    "luaparse": "^0.2.1"
+  }
+}
