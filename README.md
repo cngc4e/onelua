@@ -30,7 +30,6 @@ To expose a Lua package via NPM, in its `package.json`, be sure to specify the e
 Consider a package named `deptest`:
 ```
 "name": "deptest",
-"main": "dummy.js",
 "onelua": {
   "main": "deptest.lua"
 },

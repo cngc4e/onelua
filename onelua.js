@@ -153,23 +153,22 @@ class OLProcessor {
 
         /* finally, find the module installed with npm */
         //console.dir(require.resolve.paths(module))
-        var module_path = require.resolve(module, {
+        var pkg_path = require.resolve(module + "/package.json", {
             paths: [path.join(process.cwd(), "node_modules")]
         });
-        if (!module_path)
+        if (!pkg_path)
             return null;
 
-        module_path = path.dirname(module_path);
+        var module_path = path.dirname(pkg_path);
 
-        var pkgPath = path.resolve(module_path, "package.json");
-        var pkgCfg = require(pkgPath);
-        if (!pkgCfg)
+        var pkg_cfg = require(pkg_path);
+        if (!pkg_cfg)
             return null;  // package.json not found
 
-        if (!pkgCfg.onelua || !pkgCfg.onelua.main)
+        if (!pkg_cfg.onelua || !pkg_cfg.onelua.main)
             return null;  // package.json found, but no onelua instructions / entry file
 
-        script_path = path.resolve(module_path, pkgCfg.onelua.main);
+        script_path = path.resolve(module_path, pkg_cfg.onelua.main);
         if (fs.existsSync(script_path))
             return new LuaScript(script_path);
 
