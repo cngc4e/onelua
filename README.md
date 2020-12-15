@@ -42,4 +42,4 @@ local deptest = require('deptest')
 ```
 
 ## Example
-* [Example repository](https://github.com/cngc4e/luaAppTest)
+* [Example repository](https://github.com/cngc4e/LuaAppTest)

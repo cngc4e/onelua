@@ -5,6 +5,7 @@
 const fs = require("fs");
 const path = require("path");
 const { ArgumentParser } = require("argparse");
+const { performance } = require("perf_hooks");
 const onelua = require("./onelua.js");
 
 function cli() {
@@ -13,8 +14,9 @@ function cli() {
         description: 'Argparse example',
         add_help: true
     });
-    parser.add_argument('source', { help: "Path to the Lua project or entry point Lua file" })
-    parser.add_argument('-o', '--output', { help: "Path to the output Lua file" })
+    parser.add_argument('source', { help: "Path to the Lua project or entry point Lua file" });
+    parser.add_argument('-o', '--output', { help: "Path to the output Lua file" });
+    parser.add_argument('--debug', { help: "Turn on debugging logs", action: 'store_true' });
 
     const args = parser.parse_args();
 
@@ -56,11 +58,22 @@ function cli() {
         entryFile = args.source;
     }
 
-    var output = onelua.process(entryFile);
+    var time_start = performance.now();
 
-    fs.writeFile(outputFile, output, (err) => {
-        if (err) return console.log(err);
-    });
+    var output = onelua.process(entryFile, { debug: args.debug });
+
+    try {
+        fs.writeFileSync(outputFile, output);
+    } catch (err) {
+        console.error(`An error occurred while trying to write to ${outputFile}`)
+        if (err) console.error(err);
+        return 1;
+    }
+
+    var time_end = performance.now();
+    var seconds_taken = ((time_end - time_start) / 1000).toFixed(2);
+
+    console.log(`> Wrote file to ${path.resolve(outputFile)}\nBuild successful! (${seconds_taken}s)`)
 
     return 0;
 }
