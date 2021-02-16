@@ -204,27 +204,34 @@ class OLProcessor {
         /* ast utils */
         var createRequireDef = (key, ast) => {
             return {
-                "type": "TableKey",
-                "key": {
-                    "type": "NumericLiteral",
-                    "value": key,
-                    "raw": key.toString()
-                },
-                "value": {
-                    "type": "FunctionDeclaration",
-                    "identifier": null,
-                    "isLocal": false,
-                    "parameters": [],
-                    "body": ast
-                }
-            };
-        }
-        var fields = [];
+                "type": "AssignmentStatement",
+                "variables": [
+                    {
+                        "type": "IndexExpression",
+                        "base": {
+                            "type": "Identifier",
+                            "name": "__OL__packages"
+                        },
+                        "index": {
+                            "type": "NumericLiteral",
+                            "value": key,
+                            "raw": key.toString()
+                        }
+                    }
+                ],
+                "init": [
+                    {
+                        "type": "FunctionDeclaration",
+                        "identifier": null,
+                        "isLocal": false,
+                        "parameters": [
 
-        Object.keys(modulesAst).forEach((id) => {
-            fields.push(createRequireDef(id, modulesAst[id].body));
-            finalAst.globals.push(...modulesAst[id].globals);  // extend globals
-        });
+                        ],
+                        "body": ast
+                    }
+                ]
+            }
+        }
 
         /* define packages */
         finalAst.body.push({
@@ -239,9 +246,14 @@ class OLProcessor {
             "init": [
                 {
                     "type": "TableConstructorExpression",
-                    "fields": fields
+                    "fields": []
                 }
             ]
+        });
+
+        Object.keys(modulesAst).forEach((id) => {
+            finalAst.body.push(createRequireDef(id, modulesAst[id].body));
+            finalAst.globals.push(...modulesAst[id].globals);  // extend globals
         });
 
         /* define One-lua require() function */

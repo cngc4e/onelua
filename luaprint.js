@@ -226,7 +226,7 @@ var formatExpression = function(expression, options) {
         eachItem(expression.arguments, function(argument, needsComma) {
             result += formatExpression(argument);
             if (needsComma) {
-                result += ',';
+                result += ', ';
             }
         });
         result += ')';
@@ -263,7 +263,7 @@ var formatExpression = function(expression, options) {
                     ? parameter.name
                     : parameter.value;
                 if (needsComma) {
-                    result += ',';
+                    result += ', ';
                 }
             });
         }
@@ -271,8 +271,7 @@ var formatExpression = function(expression, options) {
         depth++;
         result = joinStatements(result, formatStatementList(expression.body));
         depth--;
-        result += "\n" + INDENT.repeat(depth);
-        result = joinStatements(result, 'end');
+        result = joinStatements(result, 'end', '\n' + INDENT.repeat(depth));
 
     } else if (expressionType == 'TableConstructorExpression') {
         if (expression.fields.length <= 0) {
@@ -323,7 +322,7 @@ var formatStatement = function(statement) {
         eachItem(statement.variables, function(variable, needsComma) {
             result += formatExpression(variable);
             if (needsComma) {
-                result += ',';
+                result += ', ';
             }
         });
 
@@ -332,7 +331,7 @@ var formatStatement = function(statement) {
         eachItem(statement.init, function(init, needsComma) {
             result += formatExpression(init);
             if (needsComma) {
-                result += ',';
+                result += ', ';
             }
         });
 
@@ -345,7 +344,7 @@ var formatStatement = function(statement) {
             // Variables in a `LocalStatement` are always local, duh
             result += variable.name;
             if (needsComma) {
-                result += ',';
+                result += ', ';
             }
         });
 
@@ -355,7 +354,7 @@ var formatStatement = function(statement) {
             eachItem(statement.init, function(init, needsComma) {
                 result += formatExpression(init);
                 if (needsComma) {
-                    result += ',';
+                    result += ', ';
                 }
             });
         }
@@ -394,14 +393,18 @@ var formatStatement = function(statement) {
     } else if (statementType == 'WhileStatement') {
 
         result = joinStatements('while', formatExpression(statement.condition));
-        result = joinStatements(result, 'do');
+        depth++;
+        result = joinStatements(result, 'do', '\n' + INDENT.repeat(depth));
         result = joinStatements(result, formatStatementList(statement.body));
-        result = joinStatements(result, 'end');
+        depth--;
+        result = joinStatements(result, 'end', '\n' + INDENT.repeat(depth));
 
     } else if (statementType == 'DoStatement') {
 
+        depth++;
         result = joinStatements('do', formatStatementList(statement.body));
-        result = joinStatements(result, 'end');
+        depth--;
+        result = joinStatements(result, 'end', '\n' + INDENT.repeat(depth));
 
     } else if (statementType == 'ReturnStatement') {
 
@@ -410,7 +413,7 @@ var formatStatement = function(statement) {
         eachItem(statement.arguments, function(argument, needsComma) {
             result = joinStatements(result, formatExpression(argument));
             if (needsComma) {
-                result += ',';
+                result += ', ';
             }
         });
 
@@ -420,7 +423,9 @@ var formatStatement = function(statement) {
 
     } else if (statementType == 'RepeatStatement') {
 
+        depth++;
         result = joinStatements('repeat', formatStatementList(statement.body));
+        depth--;
         result = joinStatements(result, 'until');
         result = joinStatements(result, formatExpression(statement.condition))
 
@@ -438,7 +443,7 @@ var formatStatement = function(statement) {
                     ? parameter.name
                     : parameter.value;
                 if (needsComma) {
-                    result += ',';
+                    result += ', ';
                 }
             });
         }
@@ -447,8 +452,7 @@ var formatStatement = function(statement) {
         depth++;
         result = joinStatements(result, formatStatementList(statement.body));
         depth--;
-        result += "\n" + INDENT.repeat(depth);
-        result = joinStatements(result, 'end');
+        result = joinStatements(result, 'end', '\n' + INDENT.repeat(depth));
 
     } else if (statementType == 'ForGenericStatement') {
         // see also `ForNumericStatement`
@@ -459,7 +463,7 @@ var formatStatement = function(statement) {
             // The variables in a `ForGenericStatement` are always local
             result += variable.name;
             if (needsComma) {
-                result += ',';
+                result += ', ';
             }
         });
 
@@ -468,28 +472,32 @@ var formatStatement = function(statement) {
         eachItem(statement.iterators, function(iterator, needsComma) {
             result = joinStatements(result, formatExpression(iterator));
             if (needsComma) {
-                result += ',';
+                result += ', ';
             }
         });
 
         result = joinStatements(result, 'do');
+        depth++;
         result = joinStatements(result, formatStatementList(statement.body));
-        result = joinStatements(result, 'end');
+        depth--;
+        result = joinStatements(result, 'end', '\n' + INDENT.repeat(depth));
 
     } else if (statementType == 'ForNumericStatement') {
 
         // The variables in a `ForNumericStatement` are always local
         result = 'for ' + statement.variable.name + ' = ';
-        result += formatExpression(statement.start) + ',' +
+        result += formatExpression(statement.start) + ', ' +
             formatExpression(statement.end);
 
         if (statement.step) {
-            result += ',' + formatExpression(statement.step);
+            result += ', ' + formatExpression(statement.step);
         }
 
         result = joinStatements(result, 'do');
+        depth++;
         result = joinStatements(result, formatStatementList(statement.body));
-        result = joinStatements(result, 'end');
+        depth--;
+        result = joinStatements(result, 'end', '\n' + INDENT.repeat(depth));
 
     } else if (statementType == 'LabelStatement') {
 
@@ -518,7 +526,7 @@ function luaprint(argument) {
         ? luaparse.parse(argument)
         : argument;
 
-    return formatStatementList(ast.body);
+    return formatStatementList(ast.body) + '\n';
 
 }
 
