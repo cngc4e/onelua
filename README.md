@@ -40,5 +40,18 @@ Which can be require()-ed by other Lua modules like so:
 local deptest = require('deptest')
 ```
 
+### Command-line (CLI) options
+The following command-line arguments are supported. An exhaustive list can be found by running `onelua --help`.
+
+* #### ``--no-minify`` **Experimental**
+Turn off minified output. If specified will use `luaprint` instead of `luamin` to output the luaparse AST. `luaprint` is experimental and not guaranteed to be reliable.
+
+Example usage which outputs non-minified Lua script:
+```
+"scripts": {
+  "build": "onelua . --no-minify",
+}
+```
+
 ## Example
 * [Example repository](https://github.com/cngc4e/LuaAppTest)

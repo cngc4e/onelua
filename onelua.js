@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const luamin = require("luamin");
+const luaprint = require("./luaprint");
 
 class LuaScript {
     constructor(path_absol) {
@@ -20,6 +21,7 @@ class LuaScript {
 class OLProcessor {
     constructor(entry, options) {
         this.debug = options.debug;
+        this.minify = options.minify;
         this.entryScript = new LuaScript(path.resolve(entry));
 
         if (!this.entryScript.exists()) throw "Entry script doesn't exist!";
@@ -102,7 +104,11 @@ class OLProcessor {
 
             if (this.debug) console.log("!!!!!! parsing ast for " + script.path + ` (id ${thisModuleId})`)
             //try {
-            var ast = luaparse.parse(script.contents, { encodingMode: 'x-user-defined', scope: true });
+            var ast = luaparse.parse(script.contents, {
+                encodingMode: 'x-user-defined',
+                scope: true,
+                comments: true
+            });
             //}catch (err){ console.log(err) }
 
             if (this.debug) console.log("-----finished parse ast for " + script.path + ` (id ${thisModuleId})`)
@@ -129,7 +135,7 @@ class OLProcessor {
 
         var finalAst = this.#createFinalAst(modulesIds, modulesAst, mainAst);
 
-        return luamin.minify(finalAst);
+        return this.minify ? luamin.minify(finalAst) : luaprint(finalAst);
     }
 
     /* Get the associated LuaScript from this context */
