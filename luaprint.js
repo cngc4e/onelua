@@ -40,47 +40,10 @@ var joinStatements = function(a, b, separator) {
         return a + b;
     }
     return a + separator + b;
-    if (regexAlphaUnderscore.test(lastCharA)) {
-        if (regexAlphaNumUnderscore.test(firstCharB)) {
-            // e.g. `while` + `1`
-            // e.g. `local a` + `local b`
-            return a + separator + b;
-        } else {
-            // e.g. `not` + `(2>3 or 3<2)`
-            // e.g. `x` + `^`
-            return a + b;
-        }
-    }
-    if (regexDigits.test(lastCharA)) {
-        if (
-            firstCharB == '(' ||
-            !(firstCharB == '.' ||
-            regexAlphaUnderscore.test(firstCharB))
-        ) {
-            // e.g. `1` + `+`
-            // e.g. `1` + `==`
-            return a + b;
-        } else {
-            // e.g. `1` + `..`
-            // e.g. `1` + `and`
-            return a + separator + b;
-        }
-    }
-    if (lastCharA == firstCharB && lastCharA == '-') {
-        // e.g. `1-` + `-2`
-        return a + separator + b;
-    }
-    var secondLastCharA = a.slice(-2, -1);
-    if (lastCharA == '.' && secondLastCharA != '.' && regexAlphaNumUnderscore.test(firstCharB)) {
-        // e.g. `1.` + `print`
-        return a + separator + b;
-    }
-    return a + b;
 };
 
 var formatStatementList = function(body) {
     var result = '';
-    result += INDENT.repeat(depth);
     eachItem(body, function(statement) {
         result = joinStatements(result, formatStatement(statement), '\n' + INDENT.repeat(depth));
     });
@@ -269,7 +232,7 @@ var formatExpression = function(expression, options) {
         }
         result += ')';
         depth++;
-        result = joinStatements(result, formatStatementList(expression.body));
+        result = joinStatements(result, formatStatementList(expression.body), '\n' + INDENT.repeat(depth));
         depth--;
         result = joinStatements(result, 'end', '\n' + INDENT.repeat(depth));
 
@@ -373,7 +336,8 @@ var formatStatement = function(statement) {
         depth++;
         result = joinStatements(
             result,
-            formatStatementList(statement.clauses[0].body)
+            formatStatementList(statement.clauses[0].body),
+            '\n' + INDENT.repeat(depth)
         );
         eachItem(statement.clauses.slice(1), function(clause) {
             depth--;
@@ -385,7 +349,7 @@ var formatStatement = function(statement) {
                 result = joinStatements(result, 'else', '\n' + INDENT.repeat(depth));
             }
             depth++;
-            result = joinStatements(result, formatStatementList(clause.body));
+            result = joinStatements(result, formatStatementList(clause.body), '\n' + INDENT.repeat(depth));
         });
         depth--;
         result = joinStatements(result, 'end', '\n' + INDENT.repeat(depth));
@@ -395,14 +359,14 @@ var formatStatement = function(statement) {
         result = joinStatements('while', formatExpression(statement.condition));
         depth++;
         result = joinStatements(result, 'do', '\n' + INDENT.repeat(depth));
-        result = joinStatements(result, formatStatementList(statement.body));
+        result = joinStatements(result, formatStatementList(statement.body), '\n' + INDENT.repeat(depth));
         depth--;
         result = joinStatements(result, 'end', '\n' + INDENT.repeat(depth));
 
     } else if (statementType == 'DoStatement') {
 
         depth++;
-        result = joinStatements('do', formatStatementList(statement.body));
+        result = joinStatements('do', formatStatementList(statement.body), '\n' + INDENT.repeat(depth));
         depth--;
         result = joinStatements(result, 'end', '\n' + INDENT.repeat(depth));
 
@@ -424,7 +388,7 @@ var formatStatement = function(statement) {
     } else if (statementType == 'RepeatStatement') {
 
         depth++;
-        result = joinStatements('repeat', formatStatementList(statement.body));
+        result = joinStatements('repeat', formatStatementList(statement.body), '\n' + INDENT.repeat(depth));
         depth--;
         result = joinStatements(result, 'until');
         result = joinStatements(result, formatExpression(statement.condition))
@@ -450,7 +414,7 @@ var formatStatement = function(statement) {
 
         result += ')\n';
         depth++;
-        result = joinStatements(result, formatStatementList(statement.body));
+        result = joinStatements(result, formatStatementList(statement.body), '\n' + INDENT.repeat(depth));
         depth--;
         result = joinStatements(result, 'end', '\n' + INDENT.repeat(depth));
 
@@ -478,7 +442,7 @@ var formatStatement = function(statement) {
 
         result = joinStatements(result, 'do');
         depth++;
-        result = joinStatements(result, formatStatementList(statement.body));
+        result = joinStatements(result, formatStatementList(statement.body), '\n' + INDENT.repeat(depth));
         depth--;
         result = joinStatements(result, 'end', '\n' + INDENT.repeat(depth));
 
@@ -495,7 +459,7 @@ var formatStatement = function(statement) {
 
         result = joinStatements(result, 'do');
         depth++;
-        result = joinStatements(result, formatStatementList(statement.body));
+        result = joinStatements(result, formatStatementList(statement.body), '\n' + INDENT.repeat(depth));
         depth--;
         result = joinStatements(result, 'end', '\n' + INDENT.repeat(depth));
 
