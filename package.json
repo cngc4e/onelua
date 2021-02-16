@@ -1,6 +1,6 @@
 {
   "name": "onelua",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Lua script merger bringing in the NPM workflow. Compiles multiple Lua scripts into one single script, and enables tracking of remote Lua packages.",
   "main": "onelua.js",
   "bin": {

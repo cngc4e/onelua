@@ -18,6 +18,7 @@ function cli() {
     parser.add_argument('-o', '--output', { help: "Path to the output Lua file" });
     parser.add_argument('--debug', { help: "Turn on debugging logs", action: 'store_true' });
     parser.add_argument('--no-minify', { help: "Turn off minified output", action: 'store_true' });
+    parser.add_argument('--prepend-meta', { help: "Prepend the name & date-time generated", action: 'store_true' });
 
     const args = parser.parse_args();
 
@@ -62,6 +63,12 @@ function cli() {
     var time_start = performance.now();
 
     var output = onelua.process(entryFile, { debug: args.debug, minify: !args.no_minify });
+
+    if (args.prepend_meta) {
+        let name = path.basename(outputFile);
+        let time = new Date().toUTCString();
+        output = `--[[\n    ${name}\n    Generated on ${time}\n]]--\n` + output;
+    }
 
     try {
         fs.writeFileSync(outputFile, output);

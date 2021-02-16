@@ -44,7 +44,17 @@ local deptest = require('deptest')
 The following command-line arguments are supported. An exhaustive list can be found by running `onelua --help`.
 
 * #### ``--no-minify`` **Experimental**
-Turn off minified output. If specified will use `luaprint` instead of `luamin` to output the luaparse AST. `luaprint` is experimental and not guaranteed to be reliable.
+Turn off minified output. If specified will use `luaprint` instead of `luamin` to output the luaparse AST. Note that `luaprint` is experimental and not guaranteed to be reliable.
+
+* #### ``--prepend-meta``
+Prepend the name and date-time generated of the file in the output as block comments.
+Example:
+```lua
+--[[
+  deptest.lua
+  Generated on Thu, 01 Jan 1970 00:00:00 GMT
+]]--
+```
 
 Example usage which outputs non-minified Lua script:
 ```
