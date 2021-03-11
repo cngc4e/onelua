@@ -211,7 +211,8 @@ class OLProcessor {
                         "type": "IndexExpression",
                         "base": {
                             "type": "Identifier",
-                            "name": "__OL__packages"
+                            "name": "__OL__packages",
+                            "isLocal": true
                         },
                         "index": {
                             "type": "NumericLiteral",
