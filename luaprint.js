@@ -377,7 +377,7 @@ var formatStatement = function(statement) {
         eachItem(statement.arguments, function(argument, needsComma) {
             result = joinStatements(result, formatExpression(argument));
             if (needsComma) {
-                result += ', ';
+                result += ',';
             }
         });
 
@@ -436,7 +436,7 @@ var formatStatement = function(statement) {
         eachItem(statement.iterators, function(iterator, needsComma) {
             result = joinStatements(result, formatExpression(iterator));
             if (needsComma) {
-                result += ', ';
+                result += ',';
             }
         });
 
