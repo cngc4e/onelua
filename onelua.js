@@ -98,11 +98,7 @@ class OLProcessor {
                 return node;
             };
 
-            var thisModuleId = ++currModuleId;
-            modulesIds[script.path] = thisModuleId;
-            if (this.debug) console.dir(modulesIds)
-
-            if (this.debug) console.log("!!!!!! parsing ast for " + script.path + ` (id ${thisModuleId})`)
+            if (this.debug) console.log("!!!!!! parsing ast for " + script.path)
             //try {
             var ast = luaparse.parse(script.contents, {
                 encodingMode: 'x-user-defined',
@@ -111,13 +107,18 @@ class OLProcessor {
             });
             //}catch (err){ console.log(err) }
 
-            if (this.debug) console.log("-----finished parse ast for " + script.path + ` (id ${thisModuleId})`)
+            if (this.debug) console.log("-----finished parse ast for " + script.path)
 
             if (is_entry) {
                 mainAst = ast;
             } else {
-                modulesAst[thisModuleId] = ast;
-                return thisModuleId;
+                currModuleId++;
+                modulesIds[script.path] = currModuleId;
+                //if (this.debug) console.dir(modulesIds)
+                if (this.debug) console.log("! The module '" + script.path + `' was resolved with id: ${currModuleId}`)
+
+                modulesAst[currModuleId] = ast;
+                return currModuleId;
             }
         }
 
