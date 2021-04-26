@@ -51,13 +51,15 @@ class OLProcessor {
 
             luaparse.ast["callExpression"] = function() {
                 var node = original.apply(null, arguments);
-                //console.log("hmm");console.dir(node);
                 if (node.base.type == "Identifier" && node.base.name == "require") {
+                    //console.log(require("util").inspect(node, {showHidden: false, depth: null}))
                     let first_arg = node.arguments[0];
-                    if (first_arg.type != "StringLiteral") throw `invalid require statement: expected require() argument of type StringLiteral, got ${first_arg.type}`;
+                    if (first_arg.type != "StringLiteral") throw `Invalid require: expected require() argument of type StringLiteral, got ${first_arg.type}`;
 
                     let required = get_required(script.baseDir, first_arg.value);
-                    if (required == null) throw `invalid require statement: module "${first_arg.value}" was not found`;
+                    if (required == null) 
+                        throw `Invalid require: module "${first_arg.value}" was not found in ${script.path}:${node.base.loc.start.line}`;
+
                     if (this.debug) console.log(`found module in ${required.path}`)
 
                     // call recursive
@@ -103,8 +105,10 @@ class OLProcessor {
             var ast = luaparse.parse(script.contents, {
                 encodingMode: 'x-user-defined',
                 scope: true,
-                comments: true
+                comments: true,
+                locations: true
             });
+            //console.log(require("util").inspect(ast, {depth:4}))
             //}catch (err){ console.log(err) }
 
             if (this.debug) console.log("-----finished parse ast for " + script.path)
@@ -160,9 +164,12 @@ class OLProcessor {
 
         /* finally, find the module installed with npm */
         //console.dir(require.resolve.paths(module))
-        var pkg_path = require.resolve(module + "/package.json", {
-            paths: [path.join(process.cwd(), "node_modules")]
-        });
+        var pkg_path = null;
+        try {
+            pkg_path = require.resolve(module + "/package.json", {
+                paths: [path.join(process.cwd(), "node_modules")]
+            });
+        } catch (e) {}
         if (!pkg_path)
             return null;
 
