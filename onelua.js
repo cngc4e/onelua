@@ -47,55 +47,57 @@ class OLProcessor {
 
             var get_required = (base_dir, module) => this.#getRequiredModule(base_dir, module);  // expose function to luaparse
 
-            var original = luaparse.ast["callExpression"];
+            var new_astnode = (module) => {
+                let required = get_required(script.baseDir, module);
+                if (required == null)
+                    throw `Invalid require: module "${module}" was not found in ${script.path}:${node.base.loc.start.line}`;
 
-            luaparse.ast["callExpression"] = function() {
-                var node = original.apply(null, arguments);
+                if (this.debug) console.log(`found module in ${required.path}`);
+
+                // call recursive
+                var module_id = recurseResolve(required, false);
+                if (this.debug) console.log(`got back id of ${module_id} (resolving for ${script.path})`);
+
+                return {
+                    "type": "CallExpression",
+                    "base": {
+                        "type": "Identifier",
+                        "name": "__OL__require",
+                        "isLocal": true
+                    },
+                    "arguments": [
+                        {
+                            "type": "NumericLiteral",
+                            "value": module_id,
+                            "raw": module_id.toString()
+                        }
+                    ]
+                }
+            }
+
+            var originalStringCall = luaparse.ast["stringCallExpression"];
+            luaparse.ast["stringCallExpression"] = function () {
+                var node = originalStringCall.apply(null, arguments);
+                if (node.base.type == "Identifier" && node.base.name == "require") {
+                    //console.log(require("util").inspect(node, {showHidden: false, depth: null}))
+                    let arg = node.argument;
+
+                    // replace ast to point to new module
+                    node = new_astnode(arg.value);
+                }
+                return node;
+            }
+
+            var originalCall = luaparse.ast["callExpression"];
+            luaparse.ast["callExpression"] = function () {
+                var node = originalCall.apply(null, arguments);
                 if (node.base.type == "Identifier" && node.base.name == "require") {
                     //console.log(require("util").inspect(node, {showHidden: false, depth: null}))
                     let first_arg = node.arguments[0];
                     if (first_arg.type != "StringLiteral") throw `Invalid require: expected require() argument of type StringLiteral, got ${first_arg.type}`;
 
-                    let required = get_required(script.baseDir, first_arg.value);
-                    if (required == null) 
-                        throw `Invalid require: module "${first_arg.value}" was not found in ${script.path}:${node.base.loc.start.line}`;
-
-                    if (this.debug) console.log(`found module in ${required.path}`)
-
-                    // call recursive
-                    var module_id = recurseResolve(required, false);
-                    if (this.debug) console.log(`got back id of ${module_id} (resolving for ${script.path})`)
-
-                    //replace ast to point to new module
-                    /*node = {
-                        "type": "IndexExpression",
-                        "base": {
-                          "type": "Identifier",
-                          "name": "__OL__required",
-                          "isLocal": true
-                        },
-                        "index": {
-                          "type": "NumericLiteral",
-                          "value": module_id,
-                          "raw": module_id.toString()
-                        }
-                      }*/
-                    node = {
-                        "type": "CallExpression",
-                        "base": {
-                            "type": "Identifier",
-                            "name": "__OL__require",
-                            "isLocal": true
-                        },
-                        "arguments": [
-                            {
-                                "type": "NumericLiteral",
-                                "value": module_id,
-                                "raw": module_id.toString()
-                            }
-                        ]
-                    };
-
+                    // replace ast to point to new module
+                    node = new_astnode(first_arg.value);
                 }
                 return node;
             };
@@ -169,7 +171,7 @@ class OLProcessor {
             pkg_path = require.resolve(module + "/package.json", {
                 paths: [path.join(process.cwd(), "node_modules")]
             });
-        } catch (e) {}
+        } catch (e) { }
         if (!pkg_path)
             return null;
 
