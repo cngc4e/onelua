@@ -47,7 +47,7 @@ class OLProcessor {
 
             var get_required = (base_dir, module) => this.#getRequiredModule(base_dir, module);  // expose function to luaparse
 
-            var new_astnode = (module) => {
+            var new_astnode = (module, node) => {
                 let required = get_required(script.baseDir, module);
                 if (required == null)
                     throw `Invalid require: module "${module}" was not found in ${script.path}:${node.base.loc.start.line}`;
@@ -83,7 +83,7 @@ class OLProcessor {
                     let arg = node.argument;
 
                     // replace ast to point to new module
-                    node = new_astnode(arg.value);
+                    node = new_astnode(arg.value, node);
                 }
                 return node;
             }
@@ -97,7 +97,7 @@ class OLProcessor {
                     if (first_arg.type != "StringLiteral") throw `Invalid require: expected require() argument of type StringLiteral, got ${first_arg.type}`;
 
                     // replace ast to point to new module
-                    node = new_astnode(first_arg.value);
+                    node = new_astnode(first_arg.value, node);
                 }
                 return node;
             };
