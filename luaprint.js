@@ -1,7 +1,7 @@
 /*
  * luaprint.js
  *
- * "Beautify" Lua source or luaparse compatible AST.
+ * "Beautify" Lua source or luaparse compatible AST. Based off mathiasbynens's luamin.js
  */
 
 const luaparse = require("luaparse");
@@ -74,7 +74,6 @@ var formatExpression = function(expression, options) {
 
     options = {
         'precedence': 0,
-        'preserveIdentifiers': false,
         ...options
     };
 
@@ -208,9 +207,7 @@ var formatExpression = function(expression, options) {
     } else if (expressionType == 'MemberExpression') {
 
         result = formatBase(expression.base) + expression.indexer +
-            formatExpression(expression.identifier, {
-                'preserveIdentifiers': true
-            });
+            formatExpression(expression.identifier);
 
     } else if (expressionType == 'FunctionDeclaration') {
 
@@ -247,10 +244,7 @@ var formatExpression = function(expression, options) {
                 } else if (field.type == 'TableValue') {
                     result += formatExpression(field.value);
                 } else { // at this point, `field.type == 'TableKeyString'`
-                    result += formatExpression(field.key, {
-                        // TODO: keep track of nested scopes (#18)
-                        'preserveIdentifiers': true
-                    }) + ' = ' + formatExpression(field.value);
+                    result += formatExpression(field.key) + ' = ' + formatExpression(field.value);
                 }
                 if (needsComma) {
                     result += ',';
