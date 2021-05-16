@@ -391,7 +391,6 @@ var formatStatement = function(statement) {
 
     } else if (statementType == 'FunctionDeclaration') {
 
-        result = INDENT.repeat(depth);
         result += (statement.isLocal ? 'local ' : '') + 'function ';
         result += formatExpression(statement.identifier);
         result += '(';
@@ -408,7 +407,7 @@ var formatStatement = function(statement) {
             });
         }
 
-        result += ')\n';
+        result += ')';
         depth++;
         result = joinStatements(result, formatStatementList(statement.body), '\n' + INDENT.repeat(depth));
         depth--;
