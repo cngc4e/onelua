@@ -6,10 +6,6 @@
 
 const luaparse = require("luaparse");
 
-var regexAlphaUnderscore = /[a-zA-Z_]/;
-var regexAlphaNumUnderscore = /[a-zA-Z0-9_]/;
-var regexDigits = /[0-9]/;
-
 var PRECEDENCE = {
     'or': 1,
     'and': 2,
@@ -77,9 +73,9 @@ var INDENT = "    ";
 var formatExpression = function(expression, options) {
 
     options = {
-        ...options,
         'precedence': 0,
-        'preserveIdentifiers': false
+        'preserveIdentifiers': false,
+        ...options
     };
 
     var result = '';
