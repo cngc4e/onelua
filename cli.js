@@ -22,47 +22,28 @@ function cli() {
 
     const args = parser.parse_args();
 
-    if (!fs.existsSync(args.source)) {
-        console.log(`Error: entry point Lua source file not found (${args.source})`);
-        return 1;
-    }
-
-    var entryFile = null;
     var outputFile = args.output;
-    if (fs.lstatSync(args.source).isDirectory()) {
+    if (!outputFile) {
         var pkgPath = path.resolve(args.source, "package.json");
-        var pkgCfg = require(pkgPath);
-        if (!pkgCfg) {
-            console.log(`Error: directory specified, but package.json not found (${args.source})`);
-            return 1;
-        }
-
-        if (!pkgCfg.onelua) {
-            console.log(`Error: package.json found, but has no onelua build instructions`);
-            return 1;
-        }
-
-        entryFile = pkgCfg.onelua.main;
-        if (!entryFile) {
-            console.log(`Error: no main file was specified in package.json)`);
-            return 1;
-        }
-
+        outputFile = pkgCfg.onelua.output;
         if (!outputFile) {
-            outputFile = pkgCfg.onelua.output;
-            if (!outputFile) {
-                console.log(`Error: no output file was specified in package.json)`);
-                return 1;
-            }
+            console.log(`Error: no output file was specified in package.json)`);
+            return 1;
         }
-
-    } else {
-        entryFile = args.source;
     }
 
     var time_start = performance.now();
 
-    var output = onelua.process(entryFile, { debug: args.debug, minify: !args.no_minify });
+    var output = null;
+    try {
+        output = onelua.process(
+            path.resolve(args.source),
+            { debug: args.debug, minify: !args.no_minify }
+        );
+    } catch (e) {
+        console.log(`Error occurred while processing:\n${e}`);
+        return 1;
+    }
 
     if (args.prepend_meta) {
         let name = path.basename(outputFile);
